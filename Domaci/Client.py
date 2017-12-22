@@ -164,7 +164,7 @@ elif odabranoPolje == '3':
         print("Molim Vas da unesete kljuc fajla koji zelite da skinete:\n>>>")
         kljuc = input()
         izlaz(kljuc)
-        if ":" in kljuc or "" in kljuc:
+        if ":" in kljuc:
             print("Nedozvoljen karakter! Pokusajte ponovo")
             continue
         break

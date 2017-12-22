@@ -157,7 +157,8 @@ class ServerClientThread(Thread):
                     if kljuc in name:
                         print("Pronadjen %s" % name)
                         pronadjen_fajl = True
-                        file_path = ''.join(root) + "\\" + '\n'.join(files)
+                        print(root)
+                        file_path = os.getcwd() + '\\' + root + '\\' + name
                         self.socket.send("OK".encode())
                         break
 
