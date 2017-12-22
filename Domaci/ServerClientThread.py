@@ -8,10 +8,13 @@ class ServerClientThread(Thread):
 
     # Konstruktor klase
     def __init__(self, client_socket):
+
         # postavljamo atribute
         self.socket = client_socket
+
         # Pozivamo konstruktor nadredjene klase (Thread klase u ovom slucaju)
         super().__init__()
+
         # pokrecemo nit
         self.start()
 
@@ -20,10 +23,17 @@ class ServerClientThread(Thread):
         # Prvo saljemo serveru info o odabranom polju
         odabranoPolje = self.socket.recv(4096).decode()
 
+########################################################################################################################
+
+        # Registracija
         if odabranoPolje == '1':
             registrovan = False
             while not registrovan:
+
+                # Koristimo separator ':' kako bismo izvukli ime i lozinku
                 ime, lozinka = self.socket.recv(4096).decode().split(":")
+
+                # Pretraga po bazi. Ako vec postoji takav username, mora korisnik da odabere neko drugo ime.
                 with open("baza_korisnika.txt", "r+") as baza:
                     linije_baze = baza.readlines()
                     for info in linije_baze:
@@ -36,12 +46,7 @@ class ServerClientThread(Thread):
                         baza.write("{}:{}\n".format(ime,lozinka))
                         self.socket.send("OK".encode())
 
-
-
-
-
-
-
+########################################################################################################################
 
         elif odabranoPolje == '2':
 
@@ -49,7 +54,7 @@ class ServerClientThread(Thread):
             ulogovan = False
             while not ulogovan:
 
-                # Izvlacimo iz JSON-a podatke korisnika
+                # Izvlacimo ime i lozinku koju je uneo korisnik
                 ime, lozinka = self.socket.recv(4096).decode().split(":")
 
                 # Otvaramo bazu korisnika i citamo liniju po liniju (tj. jednog po jednog korisnika)
@@ -86,7 +91,7 @@ class ServerClientThread(Thread):
             # Fajlovi direktorijuma ulogovanog korisnika
             files = os.listdir(shared_dir + "\\" + ime)
 
-            # Pretvara listu u string (takoreci "join-uje" je u string, ako nema nista u tom folderu - izbacuje 'EMPTY'
+            # Pretvara listu u string (takoreci "join-uje" je u string) ako nema nista u tom folderu - izbacuje 'EMPTY'
             send_data = '\n'.join(files) if files else 'EMPTY'
 
             # Cuvamo putanju do korisnikovog foldera u promenljivu
@@ -110,9 +115,14 @@ class ServerClientThread(Thread):
 
             elif odgovor == '2':
                 print("Upload izabrano")
+
+                # Nas generator kljuca, trenutno uzima 6 karaktera. Svakako moze da se poveca.
                 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
                     return ''.join(random.choice(chars) for _ in range(size))
+
                 id_postoji = False
+
+                # Proveravamo da li isti takav kljuc vec postoji medju fajlovima
                 while not id_postoji:
                     randomizer = id_generator()
                     for root, dirs, files in os.walk(shared_dir):
@@ -126,23 +136,22 @@ class ServerClientThread(Thread):
                     else:
                         continue
 
+            elif odgovor == '/quit':
+                print("Klijent je prekinuo vezu.")
             else:
                 print("Pogresan unos!")
 
-
-
-
-
-
+########################################################################################################################
 
         elif odabranoPolje == '3':
             shared_dir = 'Shared Files'
             kljuc = self.socket.recv(4096).decode()
             kljuc = kljuc.replace('\n', "")
-            # print(kljuc)
             print("Sad cemo da trazimo fajl\n")
             pronadjen_fajl = False
             file_path = None
+
+            # Trazimo fajl prema unetom kljucu
             for root, dirs, files in os.walk(shared_dir):
                 for name in files:
                     if kljuc in name:
@@ -159,3 +168,8 @@ class ServerClientThread(Thread):
                 with open(file_path, 'rb') as download:
                     self.socket.sendall(download.read())
                 print("Fajl uspesno poslat!")
+
+        elif odabranoPolje == '/quit':
+            print("Klijent je prekinuo vezu.")
+        else:
+            print("Pogresan unos!")
