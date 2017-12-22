@@ -1,0 +1,10 @@
+ime:lozinka
+user:pass
+admin:admin
+123:123
+Filip:Buljas
+Stagod:stagod
+probaj:nestonovo
+ja:kralj
+nikola:prikolica
+test345:test345
